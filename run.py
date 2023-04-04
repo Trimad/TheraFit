@@ -40,35 +40,50 @@ def get_data(sheet_range):
     
     return data
 
+def create_vector(row_data):
+    vector = row_data[3:8]
+    vector = [float(x) for x in vector]
+    return vector
+
+
+def data_to_dataframe(data):
+    if data:
+        headers = data.pop(0)
+        df = pd.DataFrame(data, columns=headers)
+        df["Vector"] = df.apply(create_vector, axis=1)
+    else:
+        df = pd.DataFrame(columns=['Error'], data=[["No data found in the specified range."]])
+    return df
+
+
+def display_side_by_side(*args):
+    html_str = ''
+    for df in args:
+        html_str += df.to_html(index=False, classes="table table-striped")
+    return html_str
+
 def main():
     clients_sheet_range = 'Clients!A1:H1000'  # Adjust the range as needed
     therapists_sheet_range = 'Therapists!A1:H1000'  # Adjust the range as needed
 
-    def wrapper(sheet_name):
-        if sheet_name.lower() == 'clients':
-            data = get_data(clients_sheet_range)
-        elif sheet_name.lower() == 'therapists':
-            data = get_data(therapists_sheet_range)
-        else:
-            return pd.DataFrame(columns=['Error'], data=[["Invalid sheet name."]])
+    def wrapper():
+        clients_data = get_data(clients_sheet_range)
+        therapists_data = get_data(therapists_sheet_range)
 
-        if data:
-            headers = data.pop(0)
-            df = pd.DataFrame(data, columns=headers)
-            return df
-        else:
-            return pd.DataFrame(columns=['Error'], data=[["No data found in the specified range."]])
+        clients_df = data_to_dataframe(clients_data)
+        therapists_df = data_to_dataframe(therapists_data)
+        
+        return display_side_by_side(clients_df, therapists_df)
 
     iface = gr.Interface(
         fn=wrapper,
-        inputs=["text"],
-        outputs="dataframe",
-        title="Questionnaire Data",
-        description="Enter the sheet name (either 'Clients' or 'Therapists') to retrieve data from the specified Google Sheet.",
-        examples=[["Clients"], ["Therapists"]],
+        inputs=[],
+        outputs="html",
+        title="Clients and Therapists Data",
+        description="This interface displays Clients and Therapists data from the specified Google Sheet in two separate tables side-by-side.",
         allow_flagging="never"
-        )
-
+    )
     iface.launch()
 
-main()
+if __name__ == '__main__':
+    main()
