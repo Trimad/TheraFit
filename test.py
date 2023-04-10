@@ -97,11 +97,8 @@ def find_closest_therapists(selected_client_vector, therapists_data):
         therapists_distances.append((row, distance))
 
     sorted_therapists = sorted(therapists_distances, key=lambda x: x[1])
-    return [therapist[0] for therapist in sorted_therapists[:5]]  # Return only the top 5 closest therapists
-
-
-
-
+    #return [therapist[0] for therapist in sorted_therapists[:5]]  # Return only the top 5 closest therapists
+    return [therapist[0] for therapist in sorted_therapists]  # Return only the top 5 closest therapists
 
 iface = gr.Interface(fn=find_therapists, inputs=["text"], outputs="text", allow_flagging=True)
 
