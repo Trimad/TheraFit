@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<!-- <html lang="en" data-bs-theme="dark"> -->
+<html lang="en">
+
+
+<head>
+    <title>TheraFit</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM"
+        crossorigin="anonymous"></script>
+    <script>
+        // Update fetchData to accept a search query as an argument
+        async function fetchData(searchQuery = '') {
+            // Pass the search query as a parameter to the /client route
+            const response = await fetch(`/client?search=${searchQuery}`);
+            const data = await response.json();
+            const tableHeader = data.shift();
+
+            const container = document.getElementById('client-accordion');
+            // Clear the container before appending new items
+            container.innerHTML = '';
+            data.forEach((row, index) => {
+                const item = createAccordionItem(tableHeader, row, index);
+                container.appendChild(item);
+            });
+        }
+
+        // Add a new function to handle the search form submission
+        function handleSearch(event) {
+            event.preventDefault(); // Prevent the default form submission behavior
+
+            const searchInput = document.getElementById('search-input');
+            const searchQuery = searchInput.value.trim();
+            fetchData(searchQuery);
+        }
+
+
+
+        function createAccordionItem(tableHeader, row, index) {
+
+            const item = document.createElement('div');
+            item.className = 'accordion-item';
+
+            const header = document.createElement('h2');
+            header.className = 'accordion-header';
+            header.id = `flush-heading${index}`;
+            item.appendChild(header);
+
+            const button = document.createElement('button');
+            button.className = 'accordion-button collapsed';
+            button.type = 'button';
+            button.dataset.bsToggle = 'collapse';
+            button.dataset.bsTarget = `#flush-collapse${index}`;
+            button.setAttribute('aria-expanded', 'false');
+            button.setAttribute('aria-controls', `flush-collapse${index}`);
+            button.textContent = `${row[1]} ${row[2]}`;
+            header.appendChild(button);
+
+            const collapse = document.createElement('div');
+            collapse.id = `flush-collapse${index}`;
+            collapse.className = 'accordion-collapse collapse';
+            collapse.setAttribute('aria-labelledby', `flush-heading${index}`);
+            collapse.dataset.bsParent = '#client-accordion';
+            item.appendChild(collapse);
+
+            const body = document.createElement('div');
+            body.className = 'accordion-body';
+
+            // TABLE
+            const table = document.createElement('table');
+            table.classList.add('table');
+            const tableBody = document.createElement('tbody');
+            table.appendChild(tableBody);
+
+            // TABLE HEADER
+            const tableRow1 = document.createElement('tr');
+            tableRow1.classList.add('table-primary');
+            tableBody.appendChild(tableRow1);
+            tableHeader.forEach((cellData) => {
+                const tableColumn = document.createElement('th');
+                tableColumn.setAttribute('scope', 'col');
+                tableColumn.textContent = cellData;
+                tableRow1.appendChild(tableColumn);
+            });
+
+            // TABLE CELL
+            const tableRow2 = document.createElement('tr');
+            tableRow2.classList.add('table-primary');
+            tableBody.appendChild(tableRow2);
+            row.forEach((cellData) => {
+                const tableColumn = document.createElement('td');
+                tableColumn.setAttribute('scope', 'row');
+                tableColumn.textContent = cellData;
+                tableRow2.appendChild(tableColumn);
+            });
+
+            body.appendChild(table);
+
+            collapse.appendChild(body);
+
+            return item;
+        }
+
+        // document.addEventListener('DOMContentLoaded', fetchData())
+        // document.addEventListener('DOMContentLoaded', fetchData);
+        document.addEventListener('DOMContentLoaded', () => fetchData());
+
+        function onSearch(event) {
+            event.preventDefault(); // Prevent form submission
+            const searchInput = document.querySelector('input[type="search"]');
+            fetchData(searchInput.value);
+        }
+
+        // Add event listener to the search button
+        //document.querySelector('button[type="submit"]').addEventListener('click', onSearch);
+    </script>
+</head>
+
+<body>
+
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#">TheraFit</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
+                data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false"
+                aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                    <li class="nav-item">
+                        <a class="nav-link" aria-current="page" href="index.html">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" aria-current="page" href="client.html">Clients</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" aria-current="page" href="therapist.html">Therapists</a>
+                    </li>
+                </ul>
+                <form class="d-flex" onsubmit="handleSearch(event)">
+                    <input class="form-control me-2" id="search-input" type="search" placeholder="Search"
+                        aria-label="Search">
+                    <button class="btn btn-outline-success" type="submit">Search</button>
+                </form>
+
+            </div>
+        </div>
+    </nav>
+
+    <div class="accordion accordion-flush" id="client-accordion"></div>
+</body>
+
+</html>
