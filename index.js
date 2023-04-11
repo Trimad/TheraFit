@@ -82,19 +82,22 @@ app.get('/client', async (req, res) => {
     const sheets = google.sheets({ version: 'v4', auth });
     const response = await sheets.spreadsheets.values.get({
       spreadsheetId: '1ACpGIUQ_EA42Ym_yDxNpb81DWHLXSTX1jHzq7cnNxdI',
-      range: 'Clients!A1:I1000',
+      range: 'Clients!A1:I1000'
     });
 
     const rows = response.data.values;
     if (!rows || rows.length === 0) {
-      console.log('No data found.');
       res.json([]);
     } else {
       // Filter the rows based on the search query in columns 1 and 2
-      const filteredRows = rows.filter(row => {
+      const filteredRows = rows.filter((row, index) => {
+        // Always include the first row (index 0)
+        if (index === 0) return true;
+
+        // Check if row[1] or row[2] contains the searchQuery (case-insensitive)
         return row[1].toLowerCase().includes(searchQuery.toLowerCase()) || row[2].toLowerCase().includes(searchQuery.toLowerCase());
       });
-      console.log(filteredRows)
+
       res.json(filteredRows);
     }
   } catch (error) {
@@ -103,20 +106,17 @@ app.get('/client', async (req, res) => {
   }
 });
 
-
-
-
 app.get('/therapist', async (req, res) => {
   console.log('\x1b[36m%s\x1b[0m', req.url, new Date().toLocaleString());
 
   try {
     const auth = await authorize();
+    const searchQuery = req.query.search || ''; // Get the search query from request
 
-    // Access the Google Sheets API
     const sheets = google.sheets({ version: 'v4', auth });
     const response = await sheets.spreadsheets.values.get({
       spreadsheetId: '1ACpGIUQ_EA42Ym_yDxNpb81DWHLXSTX1jHzq7cnNxdI',
-      range: 'Therapists!A1:I1000',
+      range: 'Therapists!A1:I1000'
     });
 
     const rows = response.data.values;
@@ -124,7 +124,16 @@ app.get('/therapist', async (req, res) => {
       console.log('No data found.');
       res.json([]);
     } else {
-      res.json(rows);
+      // Filter the rows based on the search query in columns 1 and 2
+      const filteredRows = rows.filter((row, index) => {
+        // Always include the first row (index 0)
+        if (index === 0) return true;
+
+        // Check if row[1] or row[2] contains the searchQuery (case-insensitive)
+        return row[1].toLowerCase().includes(searchQuery.toLowerCase()) || row[2].toLowerCase().includes(searchQuery.toLowerCase());
+      });
+
+      res.json(filteredRows);
     }
   } catch (error) {
     console.error(error);
