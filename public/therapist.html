@@ -1,7 +1,5 @@
 <!DOCTYPE html>
-<!-- <html lang="en" data-bs-theme="dark"> -->
 <html lang="en">
-
 
 <head>
     <title>TheraFit</title>
@@ -17,8 +15,8 @@
     <script>
         async function fetchData(searchQuery = '') {
             try {
-                const response = await fetch(`/therapist?search=${searchQuery}`);
-                const text = await response.text();
+                const therapistResponse = await fetch(`/therapist?search=${searchQuery}`);
+                const text = await therapistResponse.text();
                 const data = JSON.parse(text);
                 const tableHeader = data.shift();
                 const container = document.getElementById('accordions');

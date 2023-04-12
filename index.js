@@ -77,12 +77,23 @@ app.get('/client', async (req, res) => {
   try {
     const auth = await authorize();
     const searchQuery = req.query.search || ''; // Get the search query from request
-    console.log(searchQuery)
+    console.log(searchQuery);
 
     const sheets = google.sheets({ version: 'v4', auth });
+
+    // Get the sheet properties to find the last row with data
+    const sheetPropertiesResponse = await sheets.spreadsheets.get({
+      spreadsheetId: '1ACpGIUQ_EA42Ym_yDxNpb81DWHLXSTX1jHzq7cnNxdI',
+      ranges: ['Clients!A1:I'],
+      fields: 'sheets(properties(sheetId,title,gridProperties(rowCount)))',
+    });
+
+    const sheetProperties = sheetPropertiesResponse.data.sheets[0].properties;
+    const lastRow = sheetProperties.gridProperties.rowCount;
+
     const response = await sheets.spreadsheets.values.get({
       spreadsheetId: '1ACpGIUQ_EA42Ym_yDxNpb81DWHLXSTX1jHzq7cnNxdI',
-      range: 'Clients!A1:I1000'
+      range: `Clients!A1:I${lastRow}`, // Use the last row with data
     });
 
     const rows = response.data.values;
@@ -114,9 +125,20 @@ app.get('/therapist', async (req, res) => {
     const searchQuery = req.query.search || ''; // Get the search query from request
 
     const sheets = google.sheets({ version: 'v4', auth });
+
+    // Get the sheet properties to find the last row with data
+    const sheetPropertiesResponse = await sheets.spreadsheets.get({
+      spreadsheetId: '1ACpGIUQ_EA42Ym_yDxNpb81DWHLXSTX1jHzq7cnNxdI',
+      ranges: ['Therapists!A1:I'],
+      fields: 'sheets(properties(sheetId,title,gridProperties(rowCount)))',
+    });
+
+    const sheetProperties = sheetPropertiesResponse.data.sheets[0].properties;
+    const lastRow = sheetProperties.gridProperties.rowCount;
+
     const response = await sheets.spreadsheets.values.get({
       spreadsheetId: '1ACpGIUQ_EA42Ym_yDxNpb81DWHLXSTX1jHzq7cnNxdI',
-      range: 'Therapists!A1:I1000'
+      range: `Therapists!A1:I${lastRow}`, // Use the last row with data
     });
 
     const rows = response.data.values;
@@ -141,8 +163,13 @@ app.get('/therapist', async (req, res) => {
   }
 });
 
+
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
 
 
+const globalVariable = "This is a global variable";
+app.get('/', (req, res) => {
+  res.render('index', { globalVariable });
+});

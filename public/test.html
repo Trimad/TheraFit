@@ -16,13 +16,18 @@
         async function fetchData(searchQuery = '') {
             try {
                 const clientResponse = await fetch(`/client?search=${searchQuery}`);
-                const text = await clientResponse.text();
-                const data = JSON.parse(text);
-                const tableHeader = data.shift();
+                const clientData = await clientResponse.json();
+                const clientTableHeader = clientData.shift();
+
+                const therapistResponse = await fetch(`/therapist?search=${searchQuery}`);
+                const therapistData = await therapistResponse.json();
+                const therapistTableHeader = therapistData.shift();
+
                 const container = document.getElementById('accordions');
                 container.innerHTML = '';
-                data.forEach((row, index) => {
-                    const item = createAccordionItem(tableHeader, row, index);
+
+                clientData.forEach((clientRow, index) => {
+                    const item = createAccordionItem(clientTableHeader, clientRow, therapistTableHeader, therapistData, index);
                     container.appendChild(item);
                 });
             } catch (error) {
@@ -30,38 +35,69 @@
             }
         }
 
+        function createAccordionItem(clientTableHeader, clientRow, therapistTableHeader, therapistData, index) {
+            const item = document.createElement('div');
+            item.classList.add('accordion-item');
 
-        function createElementWithAttributes(tag, attributes = {}) {
-            const element = document.createElement(tag);
-            Object.keys(attributes).forEach((key) => {
-                element.setAttribute(key, attributes[key]);
-            });
-            return element;
+            const header = document.createElement('h2');
+            header.classList.add('accordion-header');
+            item.appendChild(header);
+
+            const button = document.createElement('button');
+            button.classList.add('accordion-button', 'collapsed');
+            button.setAttribute('type', 'button');
+            button.setAttribute('data-bs-toggle', 'collapse');
+            button.setAttribute('data-bs-target', `#flush-collapse${index}`);
+            button.setAttribute('aria-expanded', 'false');
+            button.setAttribute('aria-controls', `flush-collapse${index}`);
+            button.textContent = `${clientRow[1]} - ${clientRow[2]}`;
+            header.appendChild(button);
+
+            const collapse = document.createElement('div');
+            collapse.classList.add('accordion-collapse', 'collapse');
+            collapse.setAttribute('id', `flush-collapse${index}`);
+            collapse.setAttribute('aria-labelledby', `flush-heading${index}`);
+            collapse.setAttribute('data-bs-parent', '#accordions');
+            item.appendChild(collapse);
+
+            const body = document.createElement('div');
+            body.classList.add('accordion-body');
+            collapse.appendChild(body);
+
+            const therapistTable = createTable(therapistTableHeader, therapistData);
+            body.appendChild(therapistTable);
+
+            return item;
         }
 
-
-        function createTable(header, row) {
+        function createTable(header, rows) {
             const table = document.createElement('table');
             table.classList.add('table');
+
+            const thead = document.createElement('thead');
+            table.appendChild(thead);
+
+            const headerRow = document.createElement('tr');
+            thead.appendChild(headerRow);
+
+            header.forEach((cellData) => {
+                const cell = document.createElement('th');
+                cell.setAttribute('scope', 'col');
+                cell.textContent = cellData;
+                headerRow.appendChild(cell);
+            });
 
             const tbody = document.createElement('tbody');
             table.appendChild(tbody);
 
-            [header, row].forEach((rowData, rowIndex) => {
+            rows.forEach((rowData) => {
                 const tr = document.createElement('tr');
-                tr.classList.add('table-primary');
                 tbody.appendChild(tr);
 
                 rowData.forEach((cellData, cellIndex) => {
-                    const cell = rowIndex === 0 ? document.createElement('th') : document.createElement('td');
+                    const cell = document.createElement('td');
                     cell.textContent = cellData;
-
-                    if (rowIndex === 0) {
-                        cell.setAttribute('scope', 'col');
-                    } else {
-                        cell.setAttribute('scope', 'row');
-                    }
-
+                    cell.setAttribute('scope', cellIndex === 0 ? 'row' : '');
                     tr.appendChild(cell);
                 });
             });
@@ -69,47 +105,11 @@
             return table;
         }
 
-        function createAccordionItem(tableHeader, row, index) {
-            const item = createElementWithAttributes('div', { class: 'accordion-item' });
-
-            const header = createElementWithAttributes('h2', { class: 'accordion-header' });
-            item.appendChild(header);
-
-            const buttonAttributes = {
-                class: 'accordion-button collapsed',
-                type: 'button',
-                'data-bs-toggle': 'collapse',
-                'data-bs-target': `#flush-collapse${index}`,
-                'aria-expanded': 'false',
-                'aria-controls': `flush-collapse${index}`,
-            };
-            const button = createElementWithAttributes('button', buttonAttributes);
-            button.textContent = `${row[1]} - ${row[2]}`;
-            header.appendChild(button);
-
-            const collapseAttributes = {
-                id: `flush-collapse${index}`,
-                class: 'accordion-collapse collapse',
-                'aria-labelledby': `flush-heading${index}`,
-                'data-bs-parent': '#client-accordion',
-            };
-            const collapse = createElementWithAttributes('div', collapseAttributes);
-            item.appendChild(collapse);
-
-            const body = createElementWithAttributes('div', { class: 'accordion-body' });
-            collapse.appendChild(body);
-
-            const table = createTable(tableHeader, row);
-            body.appendChild(table);
-
-            return item;
-        }
         document.addEventListener('DOMContentLoaded', () => fetchData());
     </script>
 </head>
 
 <body>
-
     <nav class="navbar navbar-expand-lg bg-dark" data-bs-theme="dark">
         <div class="container-fluid">
             <a class="navbar-brand" href="#">TheraFit</a>
@@ -129,6 +129,9 @@
                     <li class="nav-item">
                         <a class="nav-link" href="therapist.html">Therapists</a>
                     </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" aria-current="page" href="test.html">test</a>
+                    </li>
                 </ul>
                 <form class="d-flex" onsubmit="handleSearch(event)">
                     <input class="form-control me-2" id="search-input" type="search" placeholder="Search"
@@ -141,7 +144,6 @@
     <div class="container-fluid">
         <div class="accordion accordion-flush" id="accordions"></div>
     </div>
-
 </body>
 
 </html>
