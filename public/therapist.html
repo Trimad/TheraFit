@@ -13,25 +13,7 @@
     <script src="js\therapist.js"></script>
 
     <script>
-        async function fetchData(searchQuery = '') {
-            try {
-                const therapistResponse = await fetch(`/therapist?search=${searchQuery}`);
-                const text = await therapistResponse.text();
-                const data = JSON.parse(text);
-                const tableHeader = data.shift();
-                const container = document.getElementById('accordions');
-                container.innerHTML = '';
 
-                data.forEach((row, index) => {
-                    const item = createAccordionItem(tableHeader, row, index);
-                    container.appendChild(item);
-                });
-            } catch (error) {
-                console.error('Error:', error);
-            }
-        }
-
-        document.addEventListener('DOMContentLoaded', () => fetchData());
     </script>
 </head>
 
@@ -54,22 +36,26 @@
                         <a class="nav-link" href="client.html">Clients</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link actove" aria-current="page" href="therapist.html">Therapists</a>
+                        <a class="nav-link active" aria-current="page" href="#">Therapists</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="reference.html">API Reference</a>
                     </li>
                 </ul>
                 <form class="d-flex" onsubmit="handleSearch(event)">
-                    <input class="form-control me-2" id="search-input" type="search" placeholder="Search"
+                    <input class="form-control" id="search-input" type="search" placeholder="Search"
                         aria-label="Search">
-                    <button class="btn btn-outline-light" type="submit">Search</button>
+                    <button class="btn btn-outline-light ms-2" type="submit">Search</button>
+                    <button class="btn btn-outline-light ms-2 text-nowrap" id="spinner-button" type="button"
+                    onclick="fetchDataWithSpinner()">
+                    <span class="spinner-border spinner-border-sm" id="spinner" role="status" aria-hidden="true"
+                        style="display: none;"></span>
+                  Update Data
+                </button>
                 </form>
-
-
             </div>
         </div>
     </nav>
-    <div class="container-fluid">
-        <div class="accordion accordion-flush" id="accordions"></div>
-    </div>
 </body>
 
 </html>
